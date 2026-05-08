@@ -5,10 +5,10 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /code
 
-COPY users_service/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY users_service /code/users_service
+COPY . /code/users_service
 
 EXPOSE 8001
 

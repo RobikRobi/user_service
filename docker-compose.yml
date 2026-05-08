@@ -1,0 +1,16 @@
+services:
+  users_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: users_service
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      USERS_DB_PATH: /data/users.db
+    volumes:
+      - users_data:/data
+
+volumes:
+  users_data:
