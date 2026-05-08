@@ -12,7 +12,12 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="User service", lifespan=lifespan)
+app = FastAPI(
+    title="User service",
+    lifespan=lifespan,
+    version="1.0.0",
+    root_path="/users",
+)
 
 
 @app.get("/status")
@@ -44,7 +49,7 @@ async def create_user(data: CreateUser) -> dict[str, int | str]:
     }
 
 
-@app.get("/users")
+@app.get("/all")
 async def all_users() -> list[dict]:
     with get_connection() as connection:
         rows = connection.execute("SELECT id, username, email " \
@@ -52,7 +57,7 @@ async def all_users() -> list[dict]:
         "ORDER BY id").fetchall()
         return [dict(row) for row in rows]
 
-@app.get("/users/{user_id}")
+@app.get("/{user_id}")
 async def get_user(user_id: int) -> dict:
     with get_connection() as connection:
         user = connection.execute("SELECT id, username, email \
@@ -63,4 +68,3 @@ async def get_user(user_id: int) -> dict:
             raise HTTPException(status_code=404, 
                                 detail=f"User {user_id} not found")
     return dict(user)
-

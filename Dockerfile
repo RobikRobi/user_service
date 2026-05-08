@@ -5,12 +5,11 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /code
 
-COPY requirements.txt .
+COPY users_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /code/users_service
+COPY users_service /code/users_service
 
-EXPOSE 8000
+EXPOSE 8001
 
-CMD ["uvicorn", "users_service.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
+CMD ["uvicorn", "users_service.app.main:app", "--host", "0.0.0.0", "--port", "8001"]
