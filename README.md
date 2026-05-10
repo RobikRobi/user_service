@@ -34,7 +34,8 @@ http://127.0.0.1:8000/docs
 From the `users_service` directory:
 
 ```powershell
-docker build -t users-service .
-docker run --rm -p 8000:8000 users-service
+Copy-Item .env.example .env
+docker compose up --build
 ```
 
+The users nginx will be available at `http://localhost:8080/users/`.

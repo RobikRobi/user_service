@@ -1,0 +1,27 @@
+upstream users_service_upstream {
+    server ${USERS_SERVICE_HOST}:${USERS_SERVICE_PORT};
+}
+
+server {
+    listen 8080;
+    server_name _;
+
+    location = /users {
+        return 308 /users/;
+    }
+
+    location /users/ {
+        rewrite ^/users/(.*)$ /$1 break;
+        proxy_pass http://users_service_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Prefix /users;
+    }
+
+    location = /status {
+        proxy_pass http://users_service_upstream/status;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+    }
+}
