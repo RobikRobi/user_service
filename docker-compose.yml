@@ -9,8 +9,8 @@ services:
       USERS_DB_PATH: /data/users.db
     volumes:
       - users_data:/data
-    expose:
-      - "8001"
+    ports:
+      - "8001:8001"
 
 volumes:
   users_data:
