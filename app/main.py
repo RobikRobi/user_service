@@ -1,15 +1,21 @@
 import sqlite3
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
 from users_service.app.shemas import CreateUser
 from users_service.app.db import get_connection, init_db
+from users_service.app.rabbitmq import RabbitPublisher
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    yield
+    app.state.rabbitmq = RabbitPublisher()
+    await app.state.rabbitmq.connect()
+    try:
+        yield
+    finally:
+        await app.state.rabbitmq.close()
 
 
 app = FastAPI(
@@ -25,7 +31,7 @@ async def status_service() -> dict[str, str]:
     return {"status": "ok", "service": "user_service"}
 
 @app.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_user(data: CreateUser) -> dict[str, int | str]:
+async def create_user(data: CreateUser, request: Request) -> dict[str, int | str]:
     try:
         with get_connection() as connection:
             cursor = connection.execute(
@@ -42,11 +48,13 @@ async def create_user(data: CreateUser) -> dict[str, int | str]:
             detail="User with this username or email already exists",
         )
 
-    return {
+    user = {
         "id": cursor.lastrowid,
         "username": data.username,
         "email": data.email,
     }
+    await request.app.state.rabbitmq.publish_user_created(user)
+    return user
 
 
 @app.get("/all")
